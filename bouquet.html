@@ -42,7 +42,7 @@
       z-index: 1;
     }
 
-    /* ====== TUS ESTILOS ORIGINALES ====== */
+    /* ====== Flor (como la tenías) ====== */
     .glass{ height:800px; width:600px; background:#122139; border-radius:300px 300px 0 0; }
     .glass:before{
       content:""; height:40px; width:40px; transform-origin:center;
@@ -101,6 +101,7 @@
     @keyframes glowing{ 50%{ background:#eeff00; box-shadow:0 0 60px rgb(234,245,148); } }
     @keyframes falling{ 20%{ top:335px; background:#eeff00; box-shadow:0 0 0 rgba(253,253,7,0); } 100%{ top:335px; opacity:0; } }
 
+    /* Texto responsivo */
     .texto{
       position:absolute; left:50%; bottom:min(2.8vh, 18px);
       transform: translateX(-50%);
@@ -120,16 +121,28 @@
       z-index: 2;
     }
 
-    /* Full-bleed en móvil */
+    /* Móvil: usa alto visible real y respeta safe-area */
     @media (max-width: 768px){
       .frame{ padding:0; }
-      .box{ width:100vw; height:100vh; aspect-ratio:auto; border-radius:0; }
-    }
-    @media (max-width:360px){
-      .texto{ font-size: clamp(12px, 3.6vw, 18px); max-width:94%; padding:.35rem .55rem; line-height:1.22; }
+      .box{
+        width: 100svw;
+        height: 100dvh;      /* alto real visible */
+        aspect-ratio: auto;
+        border-radius: 0;
+      }
+      .texto{
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
+        max-width: 92%;
+        font-size: clamp(12px, 3.6vw, 18px);
+      }
     }
 
-    /* ====== Iris de llegada (IRIS IN) ====== */
+    @media (prefers-reduced-motion: reduce){
+      .petals > div, .deadPetals > div{ animation: none !important; }
+      .iris-in{ animation: none; display:none; }
+    }
+
+    /* Iris de llegada (se cierra al entrar) */
     .iris-in{
       position:absolute; inset:0; z-index: 3;
       clip-path: circle(150vmax at 50% 50%);
@@ -143,12 +156,6 @@
     }
     @keyframes irisClose{
       to{ clip-path: circle(0vmax at 50% 50%); opacity: 0; }
-    }
-
-    /* Accesibilidad */
-    @media (prefers-reduced-motion: reduce){
-      .petals > div, .deadPetals > div{ animation: none !important; }
-      .iris-in{ animation: none; display:none; }
     }
   </style>
 </head>
@@ -169,27 +176,39 @@
         <div class="deadPetals"><div></div><div></div><div></div><div></div></div>
       </div>
 
-      <h4 class="texto">Esto no es un tulipán, es un pretexto para verte feliz, linda. ❤️<br>¿Me regalas una sonrisa y una mirada coqueta? 👉👈</h4>
+      <h4 class="texto">
+        Esto no es un tulipán, es un pretexto para verte feliz, linda. ❤️<br>
+        ¿Me regalas una sonrisa y una mirada coqueta? 👉👈
+      </h4>
 
-      <!-- Iris de llegada -->
       <div class="iris-in" id="irisIn"></div>
     </div>
   </div>
 
   <script>
-    // Escala la escena (600x800) para caber DENTRO de .box, centrada y sin desbordes
+    // Escala la escena (600x800) para caber en .box dejando espacio al texto
     (function(){
-      const box   = document.getElementById('box');
-      const scene = document.getElementById('scene');
+      const box     = document.getElementById('box');
+      const scene   = document.getElementById('scene');
+      const caption = document.querySelector('.texto');
 
       function fit(){
         const bw = box.clientWidth;
         const bh = box.clientHeight;
-        const s  = Math.min(bw / 600, bh / 800);
+
+        const capH = caption ? (caption.getBoundingClientRect().height + 12) : 0;
+        const s = 0.98 * Math.min(bw / 600, (bh - capH) / 800); // 0.98: respirito extra
         scene.style.transform = `translate(-50%, -50%) scale(${s})`;
       }
+
+      // Recalcula al cambiar layout/rotación
+      new ResizeObserver(fit).observe(box);
       window.addEventListener('resize', fit, { passive:true });
-      window.addEventListener('orientationchange', () => setTimeout(fit, 50), { passive:true });
+      window.addEventListener('orientationchange', () => setTimeout(fit, 60), { passive:true });
+
+      // Cuando desaparece el iris, recalculamos por si cambia el alto visible
+      document.getElementById('irisIn')?.addEventListener('animationend', fit);
+
       fit();
     })();
 
@@ -262,7 +281,7 @@
       resize();
       draw(0);
 
-      // Limpieza del iris cuando termina
+      // Limpia el iris al terminar
       const iris = document.getElementById('irisIn');
       iris?.addEventListener('animationend', ()=> iris.remove());
     })();
