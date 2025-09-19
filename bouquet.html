@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Un ramo para ti</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    html, body{
+      height:100%; margin:0; background:#080f1a; color:#fff;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Arial;
+    }
+    .frame{
+      position:fixed; inset:0; display:grid; place-items:center;
+      padding: min(4vh, 24px);
+      background:
+        radial-gradient(1000px 700px at 75% 10%, #11162a 0, transparent 65%),
+        radial-gradient(900px 600px at 15% 85%, #0e1430 0, transparent 65%),
+        linear-gradient(180deg, #070c1a, #0a1122);
+    }
+    .box{
+      position:relative;
+      width: min(96vw, 560px);
+      aspect-ratio: 3 / 4;
+      overflow:hidden;
+      border-radius: 16px;
+      background: transparent;
+    }
+
+    /* Fondo estrellado dentro del marco */
+    .stars{
+      position:absolute; inset:0; display:block; width:100%; height:100%;
+      z-index: 0; filter: drop-shadow(0 0 6px rgba(255,255,255,.35));
+    }
+
+    /* Escena original (600x800) centrada y escalada desde el centro */
+    .scene{
+      position:absolute; left:50%; top:50%;
+      width:600px; height:800px;
+      transform-origin: center center;
+      transform: translate(-50%, -50%) scale(1);
+      will-change: transform;
+      z-index: 1;
+    }
+
+    /* ====== TUS ESTILOS ORIGINALES ====== */
+    .glass{ height:800px; width:600px; background:#122139; border-radius:300px 300px 0 0; }
+    .glass:before{
+      content:""; height:40px; width:40px; transform-origin:center;
+      border:25px solid #122139; border-radius:100%;
+      position:absolute; left:256px; top:-74px;
+    }
+    .glass:after{ content:""; position:absolute; height:15px; width:100%; background:#eeff00; top:100%; left:0; }
+
+    .shine{ width:26px; height:330px; background:white; opacity:.2; position:absolute; left:85%; top:200px; border-radius:100px; z-index:10; }
+    .shine:before{ content:""; width:26px; height:40px; position:absolute; background:white; top:365px; border-radius:100px; }
+
+    .petals>div{ position:absolute; background:#eeff00; width:85px; height:120px; top:200px; transition:all .5s ease-out; }
+    .petals>div:nth-child(1){ border-radius:15px; box-shadow:0 0 60px rgb(245,242,148); left:268px; top:200px; background:#652602; }
+    .petals>div:nth-child(2), .petals>div:nth-child(4), .petals>div:nth-child(6){ background:#eeff00; left:230px; border-radius:0 50px 0 50px; transform-origin:bottom right; }
+    .petals>div:nth-child(3), .petals>div:nth-child(5), .petals>div:nth-child(7){ background:#eeff00; left:300px; border-radius:50px 0 50px 0; transform-origin:bottom left; }
+
+    .petals>div:nth-child(2){ z-index:5; top:218px; height:130px; box-shadow:0 0 60px rgba(245,148,184,.5); animation:bloom2 3s ease-in-out forwards; }
+    .petals>div:nth-child(3){ z-index:4; top:218px; height:130px; box-shadow:0 0 60px rgba(245,148,184,.5); animation:bloom3 3s ease-in-out, glowing 2.5s ease-in-out infinite; animation-fill-mode:forwards; }
+    .petals>div:nth-child(4){ z-index:3; top:213px; height:135px; box-shadow:0 0 60px rgba(245,148,184,.5); animation:bloom4 3s ease-in-out, glowing 2.5s ease-in-out infinite; animation-fill-mode:forwards; }
+    .petals>div:nth-child(5){ z-index:2; top:213px; height:135px; box-shadow:0 0 60px rgba(245,148,184,.5); animation:bloom5 3s ease-in-out, glowing 2.5s ease-in-out infinite; animation-fill-mode:forwards; }
+    .petals>div:nth-child(6){ z-index:1; top:200px; height:130px; box-shadow:0 0 60px rgba(245,148,184,.3); animation:bloom6 3s ease-in-out, glowing 2.5s ease-in-out infinite; animation-fill-mode:forwards; }
+    .petals>div:nth-child(7){ z-index:0; top:200px; height:130px; box-shadow:0 0 60px rgba(245,148,184,.3); animation:bloom7 3s ease-in-out, glowing 2.5s ease-in-out infinite; animation-fill-mode:forwards; }
+
+    .deadPetals>div{
+      position:absolute; background:#d5d22d; width:20px; height:15px; top:200px;
+      border-radius:16px 22px 12px 22px / 16px 22px 12px 22px; box-shadow:0 0 30px rgba(255,216,74,.45);
+      transition:all .5s ease-out;
+    }
+    .deadPetals>div:nth-child(1){ left:119229959987px; transform:rotate(-30deg); animation:falling 20s 4s ease-in-out infinite; }
+    .deadPetals>div:nth-child(2){ left:26331084746px;   transform:rotate(-30deg); animation:falling 20s 8s ease-in-out infinite; }
+    .deadPetals>div:nth-child(3){ left:129759500363px;  transform:rotate(-30deg); animation:falling 20s 12s ease-in-out infinite; }
+    .deadPetals>div:nth-child(4){ left:99323149959px;   transform:rotate(-30deg); animation:falling 20s 16s ease-in-out infinite; }
+
+    .leaves>div:nth-last-child(1){ position:absolute; width:55px; height:30px; background:#338f37; top:334px; left:278px; border-radius:100px; }
+    .leaves>div:nth-child(1){ position:absolute; width:15px; height:390px; background:#054c05; top:308px; left:300px; border-radius:0 0 100px 100px; }
+    .leaves>div:nth-child(2){
+      position:absolute; width:60px; height:100px; border-radius:10px 80px 40px 80px; background:#054c05;
+      transform-origin:bottom; transform:rotate(-30deg); top:412px; left:254px; box-shadow:inset 10px 10px #066406;
+    }
+    .leaves>div:nth-child(3){
+      position:absolute; width:60px; height:100px; border-radius:80px 1px 80px 40px; background:#054c05;
+      transform-origin:bottom; transform:rotate(30deg); top:360px; left:300px; box-shadow:inset -10px 10px #066406;
+    }
+
+    .thorns>div{ position:absolute; width:0; height:0; top:200px; }
+    .thorns>div:nth-child(odd){ border-top:15px solid transparent; border-bottom:15px solid transparent; border-left:15px solid #054c05; left:315px; }
+    .thorns>div:nth-child(even){ border-top:15px solid transparent; border-bottom:15px solid transparent; border-right:15px solid #054c05; left:285px; }
+    .thorns>div:nth-child(1){ top:465px; } .thorns>div:nth-child(2){ top:390px; } .thorns>div:nth-child(4){ top:525px; }
+
+    @keyframes bloom2{ 50%{ transform:rotate(-90deg); top:400px; left:150px; } 100%{ transform:rotate(-60deg); top:615px; left:100px; background:#5e6400; box-shadow:0 0 0 rgba(245,148,184,0); } }
+    @keyframes bloom3{ 100%{ transform: rotate(50deg); } }
+    @keyframes bloom4{ 100%{ transform: rotate(-25deg); } }
+    @keyframes bloom5{ 100%{ transform: rotate(25deg); } }
+    @keyframes bloom6{ 100%{ transform: rotate(-10deg); } }
+    @keyframes bloom7{ 100%{ transform: rotate(10deg); } }
+    @keyframes glowing{ 50%{ background:#eeff00; box-shadow:0 0 60px rgb(234,245,148); } }
+    @keyframes falling{ 20%{ top:335px; background:#eeff00; box-shadow:0 0 0 rgba(253,253,7,0); } 100%{ top:335px; opacity:0; } }
+
+    .texto{
+      position:absolute; left:50%; bottom:min(2.8vh, 18px);
+      transform: translateX(-50%);
+      margin:0;
+      max-width: 92%;
+      padding: .35rem .6rem;
+      text-align: center;
+      white-space: normal;
+      word-break: break-word;
+      line-height: 1.25;
+      font-size: clamp(13px, 3.2vw, 20px);
+      color: #fff;
+      text-shadow: 0 2px 12px rgba(0,0,0,.55);
+      background: linear-gradient(180deg, rgba(0,0,0,.20), rgba(0,0,0,.28));
+      border-radius: 10px;
+      backdrop-filter: blur(3px);
+      z-index: 2;
+    }
+
+    /* Full-bleed en móvil */
+    @media (max-width: 768px){
+      .frame{ padding:0; }
+      .box{ width:100vw; height:100vh; aspect-ratio:auto; border-radius:0; }
+    }
+    @media (max-width:360px){
+      .texto{ font-size: clamp(12px, 3.6vw, 18px); max-width:94%; padding:.35rem .55rem; line-height:1.22; }
+    }
+
+    /* ====== Iris de llegada (IRIS IN) ====== */
+    .iris-in{
+      position:absolute; inset:0; z-index: 3;
+      clip-path: circle(150vmax at 50% 50%);
+      animation: irisClose .6s ease-out forwards;
+      background:
+        radial-gradient(120% 120% at 50% 50%, rgba(10,17,34,1) 0 40%, rgba(16,23,53,1) 60%, rgba(11,15,28,1) 100%),
+        radial-gradient(1px 1px at 22% 28%, rgba(255,255,255,.45) 0 60%, transparent 61%),
+        radial-gradient(1.2px 1.2px at 70% 18%, rgba(255,255,255,.35) 0 60%, transparent 61%),
+        radial-gradient(1.4px 1.4px at 58% 76%, rgba(255,255,255,.4) 0 60%, transparent 61%),
+        radial-gradient(1px 1px at 14% 82%, rgba(255,255,255,.25) 0 60%, transparent 61%);
+    }
+    @keyframes irisClose{
+      to{ clip-path: circle(0vmax at 50% 50%); opacity: 0; }
+    }
+
+    /* Accesibilidad */
+    @media (prefers-reduced-motion: reduce){
+      .petals > div, .deadPetals > div{ animation: none !important; }
+      .iris-in{ animation: none; display:none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <div class="box" id="box">
+      <canvas class="stars" id="stars"></canvas>
+
+      <div class="scene" id="scene">
+        <div class="glass"><div class="shine"></div></div>
+
+        <div class="thorns"><div></div><div></div><div></div><div></div></div>
+
+        <div class="leaves"><div></div><div></div><div></div><div></div></div>
+
+        <div class="petals"><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+
+        <div class="deadPetals"><div></div><div></div><div></div><div></div></div>
+      </div>
+
+      <h4 class="texto">Esto no es un tulipán, es un pretexto para verte feliz, linda. ❤️<br>¿Me regalas una sonrisa y una mirada coqueta? 👉👈</h4>
+
+      <!-- Iris de llegada -->
+      <div class="iris-in" id="irisIn"></div>
+    </div>
+  </div>
+
+  <script>
+    // Escala la escena (600x800) para caber DENTRO de .box, centrada y sin desbordes
+    (function(){
+      const box   = document.getElementById('box');
+      const scene = document.getElementById('scene');
+
+      function fit(){
+        const bw = box.clientWidth;
+        const bh = box.clientHeight;
+        const s  = Math.min(bw / 600, bh / 800);
+        scene.style.transform = `translate(-50%, -50%) scale(${s})`;
+      }
+      window.addEventListener('resize', fit, { passive:true });
+      window.addEventListener('orientationchange', () => setTimeout(fit, 50), { passive:true });
+      fit();
+    })();
+
+    // Fondo estrellado suave
+    (function(){
+      const canvas = document.getElementById('stars');
+      const ctx = canvas.getContext('2d');
+      const box = document.getElementById('box');
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      let stars = [];
+      let w = 0, h = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
+      let animId;
+
+      function rand(a,b){ return a + Math.random()*(b-a); }
+
+      function makeStars(){
+        const base = Math.round((w*h) / 9000);
+        const count = Math.max(80, Math.min(base, 240));
+        stars = [];
+        for (let i=0;i<count;i++){
+          stars.push({
+            x: Math.random()*w,
+            y: Math.random()*h,
+            r: rand(0.4, 1.7)*dpr,
+            tw: rand(0.2, 0.9),
+            ph: Math.random()*Math.PI*2,
+            spx: reduceMotion ? 0 : rand(-0.03, 0.03),
+            spy: reduceMotion ? 0 : rand(-0.02, 0.02),
+            hue: rand(200, 320),
+            lgt: rand(70, 92)
+          });
+        }
+      }
+
+      function resize(){
+        const rect = box.getBoundingClientRect();
+        w = Math.max(1, Math.floor(rect.width));
+        h = Math.max(1, Math.floor(rect.height));
+        canvas.width  = Math.floor(w * dpr);
+        canvas.height = Math.floor(h * dpr);
+        canvas.style.width  = w + 'px';
+        canvas.style.height = h + 'px';
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        makeStars();
+      }
+
+      function draw(t){
+        ctx.clearRect(0,0,w,h);
+        for (const s of stars){
+          const a = 0.55 + 0.45*Math.sin(t*0.001*s.tw + s.ph);
+          ctx.globalAlpha = a;
+          ctx.fillStyle = `hsl(${s.hue}deg 85% ${s.lgt}%)`;
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+          ctx.fill();
+          s.x += s.spx; s.y += s.spy;
+          if (s.x < -2) s.x = w+2;
+          if (s.x > w+2) s.x = -2;
+          if (s.y < -2) s.y = h+2;
+          if (s.y > h+2) s.y = -2;
+        }
+        ctx.globalAlpha = 1;
+        animId = requestAnimationFrame(draw);
+      }
+
+      window.addEventListener('resize', resize, { passive:true });
+      window.addEventListener('orientationchange', () => setTimeout(resize, 50), { passive:true });
+
+      resize();
+      draw(0);
+
+      // Limpieza del iris cuando termina
+      const iris = document.getElementById('irisIn');
+      iris?.addEventListener('animationend', ()=> iris.remove());
+    })();
+  </script>
+</body>
+</html>
